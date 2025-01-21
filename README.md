@@ -96,3 +96,4 @@ For a visual walkthrough, you might find the following video helpful:
 For more challanges like I did you can visit roadmap:
 
 [Build a ssh-remote-server-setup](https://roadmap.sh/projects/ssh-remote-server-setup)
+[Connect EC2 Instance](https://roadmap.sh/projects/ec2-instance)
