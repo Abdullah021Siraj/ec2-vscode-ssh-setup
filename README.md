@@ -1,99 +1,170 @@
-# Setting Up EC2 Instance with Multiple SSH Key Pairs and VS Code Remote Connection
+# Remote Linux Server SSH Configuration Project
 
-This guide provides step-by-step instructions to launch an EC2 instance, configure multiple SSH key pairs, and connect to the instance using Visual Studio Code's Remote - SSH extension.
+> A comprehensive guide to setting up secure SSH access on an AWS EC2 instance with multiple key pairs and fail2ban protection.
+
+---
+
+## Table of Contents
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+  - [EC2 Instance Creation](#ec2-instance-creation)
+  - [Initial Connection](#initial-connection)
+- [SSH Key Configuration](#ssh-key-configuration)
+  - [Creating SSH Keys Locally](#creating-ssh-keys-locally)
+  - [Server Key Configuration](#server-key-configuration)
+- [Advanced Configuration](#advanced-configuration)
+  - [SSH Config Setup](#ssh-config-setup)
+  - [Fail2ban Installation](#fail2ban-installation)
+- [Issues and Solutions](#issues-and-solutions)
+- [Security Recommendations](#security-recommendations)
+- [Files and Permissions Reference](#files-and-permissions-reference)
+- [References](#references)
+
+---
+
+## Overview
+
+This project demonstrates the setup of a secure SSH connection to a remote Linux server (AWS EC2) using multiple SSH keys and implementing brute force protection using fail2ban.
+
+### Objectives Achieved
+- [x] Set up an AWS EC2 instance
+- [x] Created and configured multiple SSH keys
+- [x] Established secure SSH connections
+- [x] Implemented fail2ban protection
+- [x] Configured SSH aliases
+
+![Project Architecture](architecture.png)
+
+---
 
 ## Prerequisites
 
-- **AWS Account**: Ensure you have an active AWS account.
-- **Visual Studio Code**: Install [VS Code](https://code.visualstudio.com/).
-- **Remote - SSH Extension**: Install the [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension in VS Code.
-- ![Extension Snip](extension-snip.png)
+### Required Tools
+- AWS Account
+- Terminal access![architecture](https://github.com/user-attachments/assets/b77b0736-9b1f-4209-a328-05eab1e9155e)
 
-## 1. Launch an EC2 Instance
+- Basic understanding of Linux commands
+- Text editor (nano/vim)
 
-1. **Access AWS Management Console**: Log in to your AWS account and navigate to the EC2 dashboard.
-2. **Launch Instance**:
-   - Click on "Launch Instance."
-   - Choose an Amazon Machine Image (AMI) and instance type.
-   - In the "Configure Instance" step, proceed without selecting a key pair for now.
-3. **Configure Security Group**:
-   - Ensure the security group allows inbound SSH (port 22) from your IP address.
-   - ![Security Group Configuration](security-group.png)
-4. **Launch Instance**: Complete the launch process.
-    - ![EC2 Dashboard](ec2-dashboard.png)
+### AWS EC2 Setup Requirements
+- Amazon Linux 2023
+- t2.micro instance (free tier eligible)
+- Security group with SSH access (Port 22)
 
-## 2. Create and Add Multiple SSH Key Pairs
+![Security group](security-group.png)
 
-1. **Generate New SSH Key Pairs**:
-   - On your local machine, generate two new SSH key pairs:
-     ```bash
-     ssh-keygen -t rsa -b 2048 -f ~/.ssh/keypair1 -C "KeyPair1"
-     ssh-keygen -t rsa -b 2048 -f ~/.ssh/keypair2 -C "KeyPair2"
-     ```
-   - This creates `keypair1`, `keypair1.pub`, `keypair2`, and `keypair2.pub` in the `~/.ssh/` directory.
-2. **Retrieve Public Keys**:
-   - Display the contents of the public keys:
-     ```bash
-     cat ~/.ssh/keypair1.pub
-     cat ~/.ssh/keypair2.pub
-     ```
-3. **Connect to EC2 Instance**:
-   - Use the existing PEM key to SSH into your EC2 instance:
-     ```bash
-     ssh -i "existing-key.pem" ec2-user@<your-ec2-public-ip>
-     ```
-4. **Add Public Keys to `authorized_keys`**:
-   - On the EC2 instance, navigate to the `.ssh` directory:
-     ```bash
-     cd ~/.ssh
-     ```
-   - Append the contents of `keypair1.pub` and `keypair2.pub` to the `authorized_keys` file:
-     ```bash
-     cat /path/to/keypair1.pub >> authorized_keys
-     cat /path/to/keypair2.pub >> authorized_keys
-     ```
-   - Ensure the `authorized_keys` file has the correct permissions:
-     ```bash
-     chmod 600 authorized_keys
-     ```
+---
 
-## 3. Set Up VS Code for Remote SSH Access
+## Setup
 
-1. **Install Remote - SSH Extension**:
-   - In VS Code, go to the Extensions view (`Ctrl+Shift+X`) and install the "Remote - SSH" extension.
-2. **Configure SSH Settings**:
-   - Press `F1`, type "Remote-SSH: Open Configuration File," and select it.
-   - Add entries for both key pairs:
-     ```plaintext
-     Host ec2-keypair1
-         HostName <your-ec2-public-ip>
-         User ec2-user
-         IdentityFile ~/.ssh/keypair1
+### EC2 Instance Creation
+1. Log in to your AWS Management Console.
+2. Navigate to the EC2 dashboard and launch an instance.
+   - **AMI**: Amazon Linux 2023
+   - **Instance Type**: t2.micro
+   - **Security Group**: Allow SSH (Port 22)
+3. Download the provided key pair and save it securely.
 
-     Host ec2-keypair2
-         HostName <your-ec2-public-ip>
-         User ec2-user
-         IdentityFile ~/.ssh/keypair2
-     ```
-3. **Connect Using VS Code**:
-   - Press `F1`, type "Remote-SSH: Connect to Host," and select either `ec2-keypair1` or `ec2-keypair2`.
-   - VS Code will establish an SSH connection to your EC2 instance using the selected key pair.
-   - ![VS Code Remote - SSH Setup](select-keypair.png)
+![EC2 Instance Creation](ec2-instance.png)
 
-## 4. Verify the Connection
+### Initial Connection
+Use the AWS-provided private key to establish an initial connection:
+```bash
+chmod 400 initial-key.pem
+ssh -i initial-key.pem ec2-user@<instance-ip>
+```
+# SSH Key Configuration
 
-- Once connected, you can open a terminal within VS Code and run commands on your EC2 instance.
-- You can also open folders and files on the EC2 instance directly in VS Code.
-- ![Successful Connection Confirmation](vs-code-terminal.png)
+## Creating SSH Keys Locally
 
-**Note**: Ensure that the security group associated with your EC2 instance allows inbound SSH connections from your local machine's IP address.
+Generate two SSH key pairs locally:
 
-For a visual walkthrough, you might find the following video helpful:
+```bash
+# First key pair
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/key1
 
-[Connect EC2 With VSCode SSH](https://www.youtube.com/watch?v=KQr0eI97cLQ)
+# Second key pair
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/key2
+```
+
+Server Key Configuration
+
+1. Connect to your EC2 instance using the initial key.
+
+2. Configure the .ssh directory and authorized_keys file:
+
+``` bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+touch ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+3. Copy the public keys (key1 and key2) into the authorized_keys file:
+
+```bash
+cat key1 >> ~/.ssh/authorized_keys
+cat key2 >> ~/.ssh/authorized_keys
+```
+
+## Advanced Configuration
+### SSH Config Setup
+Simplify connections using the SSH configuration file:
+
+```bash
+# ~/.ssh/config
+Host ec2-server
+    HostName <instance-ip>
+    User ec2-user
+    IdentityFile ~/.ssh/key1
+```
+Now, connect to your instance using:
+```bash
+ssh ec2-server
+```
+
+### Fail2ban Installation
+Install and configure fail2ban to protect against brute force attacks:
+
+```bash
+sudo dnf install fail2ban -y
+sudo systemctl start fail2ban
+sudo systemctl enable fail2ban
+```
+![Success connection](success.png)
+
+### Fail2ban Configuration
+Edit the jail.local file to enable protection:
+
+```bash
+[DEFAULT]
+# Ban for 1 hour (3600 seconds)
+bantime = 3600
+
+# Check for repeat offenders over 1 week (604800 seconds)
+findtime = 604800
+
+# Ban after 3 failed attempts
+maxretry = 3
+
+# Ignore our own IP addresses (replace with your IP)
+ignoreip = 127.0.0.1/8 YOUR_IP_ADDRESS
+
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/secure
+maxretry = 3
+```
+
+Restart the service to apply changes:
+
+```bash
+sudo systemctl restart fail2ban
+```![success](https://github.com/user-attachments/assets/bbd1faec-00ff-4c0d-815a-1204a3709202)
 
 
-For more challanges like I did you can visit roadmap:
-
-[Build a ssh-remote-server-setup](https://roadmap.sh/projects/ssh-remote-server-setup)
-[Connect EC2 Instance](https://roadmap.sh/projects/ec2-instance)
+![Fail2Ban log](log.png)![log](https://github.com/user-attachments/assets/c3c27403-e40a-43db-8e50-8d30f4380297)
+![success](https://github.com/user-attachments/assets/6b759314-cf9e-4b47-a7d1-72c1c086964c)
