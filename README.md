@@ -42,7 +42,7 @@ This project demonstrates the setup of a secure SSH connection to a remote Linux
 
 ### Required Tools
 - AWS Account
-- Terminal access![architecture](https://github.com/user-attachments/assets/b77b0736-9b1f-4209-a328-05eab1e9155e)
+- Terminal access
 
 - Basic understanding of Linux commands
 - Text editor (nano/vim)
