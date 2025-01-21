@@ -84,7 +84,7 @@ This guide provides step-by-step instructions to launch an EC2 instance, configu
 
 - Once connected, you can open a terminal within VS Code and run commands on your EC2 instance.
 - You can also open folders and files on the EC2 instance directly in VS Code.
-- ![Successful Connection Confirmation](vscode-terminal.png)
+- ![Successful Connection Confirmation](vs-code-terminal.png)
 
 **Note**: Ensure that the security group associated with your EC2 instance allows inbound SSH connections from your local machine's IP address.
 
