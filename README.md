@@ -66,7 +66,6 @@ This project demonstrates the setup of a secure SSH connection to a remote Linux
    - **Security Group**: Allow SSH (Port 22)
 3. Download the provided key pair and save it securely.
 
-![EC2 Instance Creation](ec2-instance.png)
 
 ### Initial Connection
 Use the AWS-provided private key to establish an initial connection:
@@ -132,7 +131,6 @@ sudo dnf install fail2ban -y
 sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
 ```
-![Success connection](success.png)
 
 ### Fail2ban Configuration
 Edit the jail.local file to enable protection:
@@ -163,8 +161,5 @@ Restart the service to apply changes:
 
 ```bash
 sudo systemctl restart fail2ban
-```![success](https://github.com/user-attachments/assets/bbd1faec-00ff-4c0d-815a-1204a3709202)
-
-
-![Fail2Ban log](log.png)![log](https://github.com/user-attachments/assets/c3c27403-e40a-43db-8e50-8d30f4380297)
-![success](https://github.com/user-attachments/assets/6b759314-cf9e-4b47-a7d1-72c1c086964c)
+```
+![Fail2Ban log](log.png)
